@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<title>SNX Diesel Lab</title>
+<link rel="manifest" href="data:application/json,{}">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blk:#0a0a0a;--dk:#111;--sb:#0e0e0e;--cd:#161616;--cd2:#1c1c1c;
+  --br:#222;--br2:#2e2e2e;
+  --rd:#e02020;--rdd:rgba(224,32,32,.13);
+  --gn:#2ecc71;--gnd:rgba(46,204,113,.12);
+  --bl:#3a8ef0;--bld:rgba(58,142,240,.12);
+  --am:#f5a623;--amd:rgba(245,166,35,.12);
+  --tx:#e8e4d9;--mt:#777;--mt2:#333;
+  --mn:'IBM Plex Mono',monospace;
+  --dp:'Bebas Neue',sans-serif;
+  --bd:'Barlow',sans-serif;
+  --bnav:60px; /* bottom nav height mobile */
+}
+*,::before,::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth;height:100%}
+body{background:var(--dk);color:var(--tx);font-family:var(--bd);font-size:14px;min-height:100vh;overflow-x:hidden}
+input,select,textarea,button{font-family:var(--bd);font-size:16px;} /* 16px previne zoom no iOS */
+
+/* ─── LOGIN ─── */
+#ls{display:flex;min-height:100vh;align-items:center;justify-content:center;background:var(--blk);position:relative;overflow:hidden;padding:20px}
+#ls::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(224,32,32,.04)1px,transparent 1px),linear-gradient(90deg,rgba(224,32,32,.04)1px,transparent 1px);background-size:60px 60px}
+.lglow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:500px;height:400px;background:radial-gradient(ellipse,rgba(224,32,32,.07)0%,transparent 70%);pointer-events:none}
+.lbox{position:relative;background:var(--cd);border:1px solid var(--br);padding:36px 28px;width:100%;max-width:400px}
+.llogo{font-family:var(--dp);font-size:26px;letter-spacing:.08em;color:var(--rd);margin-bottom:4px}
+.llogo span{color:var(--tx)}
+.lsub{font-family:var(--mn);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mt);margin-bottom:32px}
+.lf{margin-bottom:16px}
+.lf label{font-family:var(--mn);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mt);display:block;margin-bottom:6px}
+.lf input{width:100%;background:var(--dk);border:1px solid var(--br);padding:14px;font-size:16px;color:var(--tx);outline:none;transition:border-color .15s;border-radius:0;-webkit-appearance:none}
+.lf input:focus{border-color:var(--rd)}
+.lbtn{width:100%;background:var(--rd);color:#fff;border:none;padding:16px;font-family:var(--mn);font-size:13px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;margin-top:8px;-webkit-appearance:none;border-radius:0}
+.lerr{font-family:var(--mn);font-size:11px;color:var(--rd);margin-top:10px;display:none}
+.lhint{font-family:var(--mn);font-size:10px;color:var(--mt);margin-top:16px;text-align:center;line-height:1.7}
+
+/* ─── APP SHELL ─── */
+#app{display:none;min-height:100vh}
+
+/* ─── DESKTOP LAYOUT ─── */
+.layout{display:flex;min-height:100vh}
+
+/* SIDEBAR — desktop */
+.sidebar{width:220px;background:var(--sb);border-right:1px solid var(--br);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto;transition:transform .25s}
+.sb-logo{padding:20px 18px;border-bottom:1px solid var(--br)}
+.logo-t{font-family:var(--dp);font-size:20px;letter-spacing:.08em;color:var(--rd)}
+.logo-s{font-family:var(--mn);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-top:2px}
+.sb-nav{flex:1;padding:12px 0}
+.nsl{font-family:var(--mn);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mt2);padding:10px 18px 5px}
+.ni{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;transition:background .15s;border-left:2px solid transparent;color:var(--mt);font-size:13px;user-select:none}
+.ni:hover{background:var(--cd);color:var(--tx)}
+.ni.active{background:var(--rdd);color:var(--rd);border-left-color:var(--rd)}
+.ni svg{width:15px;height:15px;flex-shrink:0}
+.nb{margin-left:auto;background:var(--rd);color:#fff;font-family:var(--mn);font-size:9px;padding:2px 6px}
+.sb-foot{padding:14px 16px;border-top:1px solid var(--br)}
+.uav{width:32px;height:32px;background:var(--rd);display:flex;align-items:center;justify-content:center;font-family:var(--mn);font-size:11px;font-weight:500;color:#fff;flex-shrink:0}
+.ucard{display:flex;align-items:center;gap:10px}
+.uname{font-size:12px;font-weight:500;display:block;line-height:1.2}
+.uplan{font-family:var(--mn);font-size:9px;color:var(--rd);letter-spacing:.06em;text-transform:uppercase}
+.out-btn{margin-top:10px;width:100%;background:none;border:1px solid var(--br);color:var(--mt);padding:8px;font-family:var(--mn);font-size:10px;cursor:pointer;transition:all .15s}
+.out-btn:hover{border-color:var(--rd);color:var(--rd)}
+
+/* MAIN area */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* TOPBAR */
+.topbar{height:52px;background:var(--sb);border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:10}
+.bc{font-family:var(--mn);font-size:11px;color:var(--mt)}
+.bc-cur{color:var(--rd)}
+.bc-sep{color:var(--mt2);margin:0 4px}
+.tbr{display:flex;align-items:center;gap:8px}
+.srch{display:flex;align-items:center;gap:8px;background:var(--cd);border:1px solid var(--br);padding:6px 12px;width:190px}
+.srch input{background:none;border:none;outline:none;color:var(--tx);font-family:var(--mn);font-size:11px;width:100%}
+.srch input::placeholder{color:var(--mt2)}
+.tbb{background:none;border:1px solid var(--br);color:var(--mt);padding:6px 12px;cursor:pointer;font-family:var(--mn);font-size:11px;transition:all .15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.tbb.r{background:var(--rd);border-color:var(--rd);color:#fff}
+.tbb.r:hover,.tbb.r:active{background:#b81414}
+.ndot{width:6px;height:6px;background:var(--rd);border-radius:50%}
+
+/* CONTENT */
+.content{padding:20px;flex:1}
+.view{display:none}
+.view.active{display:block}
+.phdr{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;gap:12px}
+.ptitle{font-family:var(--dp);font-size:28px;letter-spacing:.04em;line-height:1}
+.pdate{font-family:var(--mn);font-size:11px;color:var(--mt);white-space:nowrap}
+
+/* ─── METRICS ─── */
+.mets{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--br);border:1px solid var(--br);margin-bottom:20px}
+.mc{background:var(--cd);padding:16px 18px}
+.mclbl{font-family:var(--mn);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mt);margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px}
+.tup{background:var(--gnd);color:var(--gn);font-size:9px;padding:2px 5px}
+.mcval{font-family:var(--dp);font-size:30px;line-height:1}
+.mcsub{font-family:var(--mn);font-size:10px;color:var(--mt);margin-top:5px}
+.mcbar{height:2px;background:var(--br);margin-top:12px}
+.mcfill{height:2px;background:var(--rd)}
+
+/* ─── PANELS ─── */
+.two-col{display:grid;grid-template-columns:1fr 300px;gap:1px;background:var(--br);border:1px solid var(--br);margin-bottom:20px}
+.panel{background:var(--cd);padding:16px 20px}
+.phdr2{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--br);gap:8px;flex-wrap:wrap}
+.pt{font-family:var(--mn);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mt)}
+.pa{font-family:var(--mn);font-size:10px;color:var(--rd);cursor:pointer;background:none;border:none;white-space:nowrap}
+.actlist{display:flex;flex-direction:column;gap:10px}
+.actitem{display:flex;gap:10px;align-items:flex-start}
+.adot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.dr{background:var(--rd)}.dg{background:var(--gn)}.db{background:var(--bl)}
+.atxt{font-size:12px;color:var(--tx);line-height:1.4;flex:1}
+.atxt strong{color:var(--rd);font-weight:500}
+.atm{font-family:var(--mn);font-size:10px;color:var(--mt);white-space:nowrap}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--br);border:1px solid var(--br)}
+
+/* OBD quick */
+.obd-row{display:flex;gap:8px;margin-bottom:12px}
+.obd-in{flex:1;background:var(--dk);border:1px solid var(--br);padding:10px 12px;font-family:var(--mn);font-size:14px;color:var(--rd);letter-spacing:.1em;text-transform:uppercase;outline:none;-webkit-appearance:none;border-radius:0}
+.obd-in:focus{border-color:var(--rd)}
+.obd-btn{background:var(--rd);color:#fff;border:none;padding:10px 14px;font-family:var(--mn);font-size:12px;cursor:pointer;border-radius:0;-webkit-appearance:none;white-space:nowrap}
+.obdr{background:var(--dk);border:1px solid var(--br);padding:12px}
+.obdc{font-family:var(--mn);font-size:14px;font-weight:500;color:var(--rd);margin-bottom:4px}
+.obdn{font-size:12px;font-weight:500;margin-bottom:6px}
+.obdd{font-size:11px;color:var(--mt);line-height:1.5}
+.obdtags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.obdtag{font-family:var(--mn);font-size:9px;padding:2px 7px;border:1px solid var(--br2);color:var(--mt)}
+
+/* QUOTE */
+.qi{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--br)}
+.qi:last-child{border-bottom:none}
+.qsup{font-size:12px;font-weight:500}
+.qrat{font-family:var(--mn);font-size:10px;color:var(--mt)}
+.qp{font-family:var(--dp);font-size:20px;text-align:right}
+.qp.best{color:var(--gn)}
+.qdel{font-family:var(--mn);font-size:9px;color:var(--mt);text-align:right}
+.qbt{font-family:var(--mn);font-size:9px;background:var(--gnd);color:var(--gn);padding:2px 6px;margin-left:4px}
+
+/* DIAG quick */
+.da{width:100%;background:var(--dk);border:1px solid var(--br);padding:10px 12px;font-size:14px;color:var(--tx);resize:vertical;min-height:68px;outline:none;margin-bottom:8px;line-height:1.5;border-radius:0;-webkit-appearance:none}
+.da:focus{border-color:var(--rd)}
+.dsel{width:100%;background:var(--dk);border:1px solid var(--br);padding:10px;color:var(--mt);font-family:var(--mn);font-size:12px;outline:none;margin-bottom:8px;border-radius:0;-webkit-appearance:none}
+.dbtn{width:100%;background:var(--rd);color:#fff;border:none;padding:12px;font-family:var(--mn);font-size:12px;cursor:pointer;border-radius:0;-webkit-appearance:none}
+.dbtn:disabled{background:var(--mt2);cursor:not-allowed}
+.dloading{font-family:var(--mn);font-size:11px;color:var(--mt);padding:12px 0;text-align:center}
+
+/* ─── INJETORES ─── */
+.itb{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.isrch{display:flex;align-items:center;gap:8px;background:var(--cd);border:1px solid var(--br);padding:10px 13px;flex:1;min-width:160px}
+.isrch input{background:none;border:none;outline:none;color:var(--tx);font-family:var(--mn);font-size:13px;width:100%}
+.isrch input::placeholder{color:var(--mt2)}
+.isort{background:var(--cd);border:1px solid var(--br);color:var(--mt);padding:10px 11px;font-family:var(--mn);font-size:12px;outline:none;cursor:pointer;border-radius:0;-webkit-appearance:none}
+.inew{background:var(--rd);color:#fff;border:none;padding:11px 16px;font-family:var(--mn);font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap;border-radius:0;-webkit-appearance:none}
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1px;background:var(--br);border:1px solid var(--br)}
+.icard{background:var(--cd);cursor:pointer;position:relative}
+.icard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--rd);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.icard:hover::after,.icard:active::after{transform:scaleX(1)}
+.trow{display:grid;grid-template-columns:1fr 1fr;gap:1px;height:130px}
+.thumb{background:var(--dk);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.tlbl{position:absolute;bottom:5px;left:5px;font-family:var(--mn);font-size:9px;text-transform:uppercase;background:rgba(0,0,0,.82);color:var(--mt);padding:2px 5px}
+.tlbl.r{background:rgba(224,32,32,.85);color:#fff}
+.tph{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--mt2)}
+.tph svg{width:24px;height:24px;opacity:.35}
+.tph span{font-family:var(--mn);font-size:9px;opacity:.4}
+.ibody{padding:14px}
+.idate{font-family:var(--mn);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--rd);margin-bottom:6px}
+.iclient{font-size:14px;font-weight:500;margin-bottom:2px}
+.iveh{font-family:var(--mn);font-size:10px;color:var(--mt);margin-bottom:6px}
+.ibico{display:inline-block;font-family:var(--mn);font-size:10px;background:var(--rdd);color:var(--rd);padding:3px 8px;margin-bottom:9px;word-break:break-all}
+.icnts{display:flex;gap:12px}
+.icnt{font-family:var(--mn);font-size:10px;color:var(--mt)}
+.icnt b{color:var(--tx)}
+.ifoot{padding:9px 14px;border-top:1px solid var(--br);display:flex;gap:7px}
+.iact{flex:1;background:none;border:1px solid var(--br);padding:9px 6px;font-family:var(--mn);font-size:10px;color:var(--mt);cursor:pointer;text-align:center;border-radius:0}
+.iact:hover,.iact:active{border-color:var(--rd);color:var(--rd)}
+.empty{padding:44px 20px;text-align:center;border:1px dashed var(--br2);grid-column:1/-1}
+.empty svg{width:40px;height:40px;color:var(--mt2);margin:0 auto 14px;display:block}
+.empty p{font-family:var(--mn);font-size:11px;color:var(--mt);line-height:1.6}
+.empty button{margin-top:16px;background:var(--rd);color:#fff;border:none;padding:12px 22px;font-family:var(--mn);font-size:12px;cursor:pointer;border-radius:0}
+
+/* ─── DIAGNÓSTICO FULL ─── */
+.dfl{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--br);border:1px solid var(--br)}
+.dleft,.dright{background:var(--cd);padding:20px}
+.dright{border-left:1px solid var(--br)}
+.dta{width:100%;background:var(--dk);border:1px solid var(--br);padding:12px;font-size:14px;color:var(--tx);resize:vertical;min-height:110px;outline:none;line-height:1.6;margin-bottom:12px;border-radius:0;-webkit-appearance:none}
+.dta:focus{border-color:var(--rd)}
+.dmeta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.dmf label{font-family:var(--mn);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mt);display:block;margin-bottom:5px}
+.dmf select,.dmf input{width:100%;background:var(--dk);border:1px solid var(--br);padding:10px;font-size:14px;color:var(--tx);outline:none;border-radius:0;-webkit-appearance:none}
+.dmf select:focus,.dmf input:focus{border-color:var(--rd)}
+.dfbtn{width:100%;background:var(--rd);color:#fff;border:none;padding:14px;font-family:var(--mn);font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:0;-webkit-appearance:none}
+.dfbtn:disabled{background:var(--mt2);cursor:not-allowed}
+.dia-res{min-height:260px;font-size:13px;line-height:1.7;color:var(--tx)}
+.dia-res h4{font-family:var(--dp);font-size:17px;color:var(--rd);margin:12px 0 5px;letter-spacing:.04em}
+.dia-res strong{color:var(--tx)}
+.dia-res li{margin-left:16px;margin-bottom:3px;color:var(--mt)}
+.dempty{font-family:var(--mn);font-size:11px;color:var(--mt2);padding:20px;text-align:center;line-height:1.6}
+.aknote{background:var(--amd);border:1px solid var(--am);padding:12px;margin-bottom:14px;font-family:var(--mn);font-size:11px;color:var(--am);line-height:1.6}
+.aknote a{color:var(--rd)}
+.akrow{display:flex;gap:8px;margin-bottom:14px}
+.akin{flex:1;background:var(--dk);border:1px solid var(--br);padding:11px 12px;font-family:var(--mn);font-size:13px;color:var(--tx);outline:none;border-radius:0;-webkit-appearance:none}
+.akin:focus{border-color:var(--rd)}
+.aksav{background:var(--cd2);color:var(--mt);border:1px solid var(--br);padding:11px 14px;font-family:var(--mn);font-size:12px;cursor:pointer;white-space:nowrap;border-radius:0}
+.aksav:hover,.aksav:active{border-color:var(--rd);color:var(--rd)}
+.dhist{max-height:170px;overflow-y:auto;margin-top:12px}
+.dhi{padding:8px 0;border-bottom:1px solid var(--br);cursor:pointer}
+.dhi-date{font-family:var(--mn);font-size:9px;color:var(--rd)}
+.dhi-txt{font-size:12px;color:var(--mt);margin-top:2px}
+
+/* ─── OBD FULL ─── */
+.obdf{display:grid;grid-template-columns:270px 1fr;gap:1px;background:var(--br);border:1px solid var(--br)}
+.obdlc{background:var(--cd);overflow-y:auto;max-height:560px}
+.obdli{padding:11px 14px;border-bottom:1px solid var(--br);cursor:pointer;transition:background .15s}
+.obdli:hover,.obdli:active{background:var(--cd2)}
+.obdli.active{background:var(--rdd);border-left:2px solid var(--rd)}
+.obdlcode{font-family:var(--mn);font-size:12px;font-weight:500;color:var(--rd)}
+.obdlname{font-size:12px;color:var(--mt);margin-top:2px}
+.obddc{background:var(--cd);padding:22px;border-left:1px solid var(--br)}
+.obdcode{font-family:var(--dp);font-size:38px;color:var(--rd);margin-bottom:4px}
+.obdname{font-size:17px;font-weight:500;margin-bottom:12px}
+.obdsec{margin-bottom:15px}
+.obdsec h4{font-family:var(--mn);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:7px}
+.obdsec p{font-size:13px;color:var(--tx);line-height:1.6}
+.obdsec ul{padding-left:16px}
+.obdsec li{font-size:13px;color:var(--mt);margin-bottom:4px;line-height:1.5}
+.obdsec li strong{color:var(--tx)}
+.obdvehs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.obdveh{font-family:var(--mn);font-size:10px;background:var(--rdd);color:var(--rd);padding:3px 9px}
+.sevalt{display:inline-flex;align-items:center;gap:6px;font-family:var(--mn);font-size:11px;padding:5px 12px;margin-bottom:12px}
+.sa{background:var(--rdd);color:var(--rd);border:1px solid var(--rd)}
+.sm{background:var(--amd);color:var(--am);border:1px solid var(--am)}
+.sb2{background:var(--gnd);color:var(--gn);border:1px solid var(--gn)}
+
+/* ─── MODALS ─── */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;display:none;align-items:flex-end;justify-content:center;padding:0}
+.ov.open{display:flex}
+.modal{background:var(--cd);border:1px solid var(--br);border-bottom:none;width:100%;max-width:740px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;border-radius:0}
+.mhdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--br);position:sticky;top:0;background:var(--cd);z-index:1}
+.mtitle{font-family:var(--dp);font-size:20px;letter-spacing:.04em}
+.mcl{background:none;border:1px solid var(--br);color:var(--mt);width:30px;height:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;border-radius:0}
+.mcl:hover,.mcl:active{border-color:var(--rd);color:var(--rd)}
+.mbody{padding:20px;display:flex;flex-direction:column;gap:16px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.frow.full{grid-template-columns:1fr}
+.field label{font-family:var(--mn);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mt);display:block;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;background:var(--dk);border:1px solid var(--br);padding:12px;font-size:16px;color:var(--tx);outline:none;transition:border-color .15s;border-radius:0;-webkit-appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--rd)}
+.field textarea{resize:vertical;min-height:76px}
+.usec{border-top:1px solid var(--br);padding-top:16px}
+.ulsec{font-family:var(--mn);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mt);margin-bottom:10px;display:block}
+.ultlbl{font-family:var(--mn);font-size:12px;color:var(--tx);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.ultlbl::before{content:'';display:block;width:7px;height:7px;background:var(--rd)}
+.dz{border:1.5px dashed var(--br2);padding:22px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:10px;position:relative;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.dz.drag{border-color:var(--rd);background:var(--rdd)}
+.dz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz svg{width:26px;height:26px;color:var(--mt2)}
+.dz p{font-family:var(--mn);font-size:11px;color:var(--mt)}
+.dz em{color:var(--rd);font-style:normal}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:5px;margin-bottom:12px}
+.pi{position:relative;aspect-ratio:1;background:var(--dk);border:1px solid var(--br);overflow:hidden}
+.pi img{width:100%;height:100%;object-fit:cover}
+.prm{position:absolute;top:2px;right:2px;width:20px;height:20px;background:rgba(224,32,32,.9);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;border-radius:0}
+.mfoot{padding:14px 20px;border-top:1px solid var(--br);display:flex;gap:9px;justify-content:flex-end;position:sticky;bottom:0;background:var(--cd)}
+.bcan{background:none;border:1px solid var(--br);color:var(--mt);padding:12px 18px;font-family:var(--mn);font-size:12px;cursor:pointer;border-radius:0}
+.bsav{background:var(--rd);color:#fff;border:none;padding:12px 24px;font-family:var(--mn);font-size:12px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;border-radius:0}
+
+/* DETAIL MODAL */
+.detm{max-width:880px}
+.detgal{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--br);border:1px solid var(--br);margin-bottom:16px}
+.galcol{background:var(--cd2);padding:14px}
+.galct{font-family:var(--mn);font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.gdot{width:7px;height:7px;background:var(--mt2)}.gdot.r{background:var(--rd)}
+.galimgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:5px}
+.galimg{aspect-ratio:1;background:var(--dk);border:1px solid var(--br);overflow:hidden;cursor:pointer}
+.galimg:hover{border-color:var(--rd)}
+.galimg img{width:100%;height:100%;object-fit:cover}
+.detinfo{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--br);border:1px solid var(--br)}
+.di{background:var(--cd);padding:12px 14px}
+.dil{font-family:var(--mn);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mt);margin-bottom:4px}
+.div2{font-size:13px;font-weight:500}
+
+/* LB */
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.96);z-index:300;display:none;align-items:center;justify-content:center}
+.lb.open{display:flex}
+.lb img{max-width:95vw;max-height:90vh;object-fit:contain}
+.lbcl{position:absolute;top:16px;right:16px;background:none;border:1px solid var(--br);color:var(--mt);width:36px;height:36px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;border-radius:0}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--cd);border:1px solid var(--br);border-left:3px solid var(--rd);padding:11px 18px;font-family:var(--mn);font-size:12px;color:var(--tx);z-index:400;opacity:0;transition:all .3s;pointer-events:none;width:calc(100% - 32px);max-width:360px;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok{border-left-color:var(--gn)}
+
+/* ═══════════════════════════════════════
+   MOBILE — tudo que muda abaixo de 768px
+═══════════════════════════════════════ */
+@media(max-width:768px){
+  /* Esconde sidebar, mostra bottom nav */
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.mob-open{transform:translateX(0)}
+  .main{margin-left:0;padding-bottom:var(--bnav)}
+  
+  /* Topbar mobile */
+  .topbar{padding:0 14px;height:52px}
+  .srch,.tbb:not(.r):not(.mob-menu){display:none}
+  .tbb.r{padding:8px 14px;font-size:12px}
+  
+  /* Bottom navigation */
+  .bnav{display:flex !important}
+  
+  /* Content padding */
+  .content{padding:14px}
+  
+  /* Page header */
+  .phdr{flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:16px}
+  .ptitle{font-size:24px}
+  .pdate{display:none}
+  
+  /* Metrics — 2 col */
+  .mets{grid-template-columns:1fr 1fr}
+  .mc{padding:14px}
+  .mcval{font-size:26px}
+  .mcbar{display:none}
+  
+  /* Two col → single */
+  .two-col,.three-col,.dfl,.obdf{grid-template-columns:1fr}
+  .dright{border-left:none;border-top:1px solid var(--br)}
+  .obddc{border-left:none;border-top:1px solid var(--br)}
+  
+  /* Injetores */
+  .itb{gap:6px}
+  .isort{display:none}
+  .igrid{grid-template-columns:1fr}
+  
+  /* Injetor card full width */
+  .trow{height:160px}
+  
+  /* Forms */
+  .frow{grid-template-columns:1fr}
+  .dmeta{grid-template-columns:1fr}
+  
+  /* OBD list → accordion on mobile */
+  .obdlc{max-height:none;overflow-y:visible}
+  
+  /* Detail gallery */
+  .detgal{grid-template-columns:1fr}
+  .detinfo{grid-template-columns:1fr 1fr}
+  
+  /* Modal slide up */
+  .ov{align-items:flex-end;padding:0}
+  .modal{max-height:88vh;border-radius:0;border-bottom:none}
+  
+  /* Toast */
+  .toast{bottom:calc(var(--bnav) + 12px)}
+}
+
+/* ─── BOTTOM NAV (mobile only) ─── */
+.bnav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  height:var(--bnav);
+  background:var(--sb);
+  border-top:1px solid var(--br);
+  z-index:50;
+  flex-direction:row;
+}
+.bn-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;cursor:pointer;padding:6px 4px;color:var(--mt);transition:color .15s;
+  border:none;background:none;
+}
+.bn-item.active{color:var(--rd)}
+.bn-item svg{width:20px;height:20px}
+.bn-label{font-family:var(--mn);font-size:9px;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+
+/* Hamburger mobile menu btn */
+.mob-menu{display:none}
+@media(max-width:768px){.mob-menu{display:flex}}
+</style>
+</head>
+<body>
+
+<!-- ─── LOGIN ─── -->
+<div id="ls">
+  <div class="lglow"></div>
+  <div class="lbox">
+    <div class="llogo">SNX <span>DIESEL LAB</span></div>
+    <div class="lsub">Plataforma · v1.0</div>
+    <div class="lf"><label>Usuário</label><input type="text" id="lu" value="admin" placeholder="admin" autocomplete="username"></div>
+    <div class="lf"><label>Senha</label><input type="password" id="lp" value="snx2026" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="lbtn" onclick="doLogin()">Entrar na plataforma</button>
+    <div class="lerr" id="lerr">Usuário ou senha incorretos.</div>
+    <div class="lhint">Demo: <b>admin</b> / <b>snx2026</b></div>
+  </div>
+</div>
+
+<!-- ─── APP ─── -->
+<div id="app">
+<div class="layout">
+
+<!-- SIDEBAR (desktop) -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo"><div class="logo-t">SNX DIESEL</div><div class="logo-s">Lab · v1.0</div></div>
+  <nav class="sb-nav">
+    <div class="nsl">Principal</div>
+    <div class="ni active" onclick="goTo('d',this)"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="1" width="6" height="6" stroke="currentColor" stroke-width="1.2"/><rect x="1" y="9" width="6" height="6" stroke="currentColor" stroke-width="1.2"/><rect x="9" y="9" width="6" height="6" stroke="currentColor" stroke-width="1.2"/></svg>Dashboard</div>
+    <div class="nsl">Ferramentas</div>
+    <div class="ni" onclick="goTo('i',this)"><svg viewBox="0 0 16 16" fill="none"><path d="M8 1v14M4 4h8M3 8h10M4 12h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/></svg>Serviços de Injetores<span class="nb" id="nbi">0</span></div>
+    <div class="ni" onclick="goTo('diag',this)"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M5 8h2l1-3 2 6 1-3h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/></svg>Diagnóstico com IA</div>
+    <div class="ni" onclick="goTo('obd',this)"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="8" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4 8h2M8 6v4M12 7v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/></svg>Tradutor OBD</div>
+  </nav>
+  <div class="sb-foot">
+    <div class="ucard"><div class="uav" id="sbav">JC</div><div><span class="uname" id="sbnm">João Carlos</span><span class="uplan">Pro · Ativo</span></div></div>
+    <button class="out-btn" onclick="doLogout()">Sair da conta</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <div class="bc">SNX<span class="bc-sep">/</span><span class="bc-cur" id="bccur">Dashboard</span></div>
+    <div class="tbr">
+      <div class="srch"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;color:var(--mt2)"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.2"/><path d="M9 9l3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/></svg><input type="text" placeholder="Buscar..."></div>
+      <div class="tbb r" id="tba" onclick="topAct()">+ Novo</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="vd">
+      <div class="phdr"><h1 class="ptitle">DASHBOARD</h1><span class="pdate" id="ddate"></span></div>
+      <div class="mets">
+        <div class="mc"><div class="mclbl">Injetores<span class="tup" id="mt1">total</span></div><div class="mcval" id="mv1">0</div><div class="mcsub">serviços salvos</div><div class="mcbar"><div class="mcfill" id="mb1" style="width:0%"></div></div></div>
+        <div class="mc"><div class="mclbl">Fotos<span class="tup">registradas</span></div><div class="mcval" id="mv2">0</div><div class="mcsub">antes + depois</div><div class="mcbar"><div class="mcfill" style="width:30%"></div></div></div>
+        <div class="mc"><div class="mclbl">Códigos OBD<span class="tup">diesel</span></div><div class="mcval">20+</div><div class="mcsub">Common Rail</div><div class="mcbar"><div class="mcfill" style="width:80%"></div></div></div>
+        <div class="mc"><div class="mclbl">Diagnósticos IA<span class="tup" id="aist">—</span></div><div class="mcval" id="mv4">0</div><div class="mcsub">análises feitas</div><div class="mcbar"><div class="mcfill" id="mb4" style="width:0%"></div></div></div>
+      </div>
+      <div class="two-col">
+        <div class="panel"><div class="phdr2"><span class="pt">Últimos injetores</span><button class="pa" onclick="goTo('i',null)">Ver todos →</button></div><div id="drec"></div></div>
+        <div class="panel" style="border-left:1px solid var(--br)"><div class="phdr2"><span class="pt">Atividade</span></div><div class="actlist" id="dact"></div></div>
+      </div>
+      <div class="three-col">
+        <div class="panel"><div class="phdr2"><span class="pt">OBD Rápido</span><button class="pa" onclick="goTo('obd',null)">Base →</button></div>
+          <div class="obd-row"><input class="obd-in" id="dobin" type="text" placeholder="P0087" maxlength="8" value="P0087" autocomplete="off"><button class="obd-btn" onclick="dOBD()">OK</button></div>
+          <div class="obdr" id="dobr"><div class="obdc">P0087</div><div class="obdn">Pressão do Rail — Baixa</div><div class="obdd">Verificar bomba, filtro ou regulador.</div><div class="obdtags"><span class="obdtag">Hilux 2.8</span><span class="obdtag">Ranger 3.2</span></div></div>
+        </div>
+        <div class="panel" style="border-left:1px solid var(--br)"><div class="phdr2"><span class="pt">Cotação · Referência</span></div>
+          <div class="qi"><div><div class="qsup">Diesel Parts CO</div><div class="qrat">★ 4.8</div></div><div><div class="qp best">R$890<span class="qbt">✓</span></div><div class="qdel">amanhã</div></div></div>
+          <div class="qi"><div><div class="qsup">Bosch Oficial</div><div class="qrat">★ 5.0</div></div><div><div class="qp">R$1.240</div><div class="qdel">3 dias</div></div></div>
+          <div class="qi"><div><div class="qsup">Auto Peças GO</div><div class="qrat">★ 3.9</div></div><div><div class="qp">R$760</div><div class="qdel">5 dias</div></div></div>
+        </div>
+        <div class="panel" style="border-left:1px solid var(--br)"><div class="phdr2"><span class="pt">IA Rápida</span><button class="pa" onclick="goTo('diag',null)">Completo →</button></div>
+          <textarea class="da" id="ddin" placeholder="Descreva o sintoma..."></textarea>
+          <select class="dsel" id="ddmod"><option value="">Selecionar modelo...</option><option>Hilux 2.8 TDI</option><option>Ranger 3.2</option><option>S10 2.8</option><option>Amarok V6</option><option>L200 2.4</option></select>
+          <button class="dbtn" id="ddbtn" onclick="qDiag()">Analisar</button>
+          <div id="ddres" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INJETORES -->
+    <div class="view" id="vi">
+      <div class="phdr"><h1 class="ptitle">INJETORES</h1><span class="pdate" id="ipd"></span></div>
+      <div class="itb">
+        <div class="isrch"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="flex-shrink:0;color:var(--mt2)"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.2"/><path d="M9 9l3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="square"/></svg><input type="text" id="iq" placeholder="Buscar cliente, veículo, bico..." oninput="renderI()"></div>
+        <select class="isort" id="isort" onchange="renderI()"><option value="date-desc">Mais recentes</option><option value="date-asc">Mais antigos</option><option value="client">Por cliente</option><option value="model">Por modelo</option></select>
+        <button class="inew" onclick="openNewI()">+ Novo</button>
+      </div>
+      <div class="igrid" id="igrid"></div>
+    </div>
+
+    <!-- DIAGNÓSTICO -->
+    <div class="view" id="vdiag">
+      <div class="phdr"><h1 class="ptitle">DIAGNÓSTICO IA</h1></div>
+      <div class="aknote" id="aknote">
+        <strong>Chave da API necessária.</strong> Acesse <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>, crie uma conta gratuita e gere sua chave. Cole abaixo — fica salva apenas no seu aparelho.
+      </div>
+      <div class="akrow"><input class="akin" type="password" id="akin" placeholder="sk-ant-api03-..."><button class="aksav" onclick="saveKey()">Salvar</button></div>
+      <div class="dfl">
+        <div class="dleft">
+          <div class="phdr2" style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--br)"><span class="pt">Descreva o problema</span></div>
+          <div class="dmeta">
+            <div class="dmf"><label>Modelo do veículo</label><select id="dmod"><option value="">Selecionar...</option><option>Hilux 2.8 TDI 2019</option><option>Hilux 2.8 TDI 2020</option><option>Hilux 2.8 TDI 2021</option><option>Hilux 2.8 TDI 2022</option><option>Ranger 3.2 PwrStroke 2020</option><option>Ranger 3.2 PwrStroke 2021</option><option>S10 2.8 Turbo 2019</option><option>S10 2.8 Turbo 2020</option><option>S10 2.8 Turbo 2021</option><option>Amarok V6 3.0 TDI</option><option>L200 Triton 2.4</option><option>Frontier 2.3 Turbo</option><option>Toro 2.0 Multijet</option><option>Outro diesel</option></select></div>
+            <div class="dmf"><label>KM aproximado</label><input type="text" id="dkm" placeholder="Ex: 95.000 km"></div>
+          </div>
+          <textarea class="dta" id="dsin" placeholder="Descreva os sintomas:&#10;• Quando acontece&#10;• Ruídos, fumaça, cheiros&#10;• Códigos do scanner&#10;• O que já foi feito"></textarea>
+          <button class="dfbtn" id="drbtn" onclick="runDiag()">Analisar com IA →</button>
+          <div style="border-top:1px solid var(--br);margin-top:14px;padding-top:12px"><div class="phdr2" style="border:none;padding:0;margin-bottom:8px"><span class="pt">Histórico</span></div><div class="dhist" id="dhist"></div></div>
+        </div>
+        <div class="dright"><div class="phdr2" style="margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--br)"><span class="pt">Resultado</span></div><div id="dres"><div class="dempty">Preencha o formulário e clique em "Analisar com IA" para obter diagnóstico técnico com causas, checklist e estimativa de custo.</div></div></div>
+      </div>
+    </div>
+
+    <!-- OBD -->
+    <div class="view" id="vobd">
+      <div class="phdr"><h1 class="ptitle">TRADUTOR OBD</h1><span class="pdate">Common Rail Diesel</span></div>
+      <div class="obdf">
+        <div class="obdlc"><div style="padding:11px 13px;border-bottom:1px solid var(--br);position:sticky;top:0;background:var(--cd)"><input style="width:100%;background:var(--dk);border:1px solid var(--br);padding:10px;font-family:var(--mn);font-size:13px;color:var(--tx);outline:none;border-radius:0" placeholder="Filtrar código ou nome..." oninput="filterOBD(this.value)"></div><div id="obdlist"></div></div>
+        <div class="obddc" id="obddet"><div style="padding:40px 20px;text-align:center;color:var(--mt2);font-family:var(--mn);font-size:12px">Selecione um código ao lado</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+</div><!-- /layout -->
+
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bnav" id="bnav">
+  <button class="bn-item active" id="bn-d" onclick="goTo('d',this)">
+    <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="2" width="7" height="7" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="11" width="7" height="7" stroke="currentColor" stroke-width="1.4"/><rect x="11" y="11" width="7" height="7" stroke="currentColor" stroke-width="1.4"/></svg>
+    <span class="bn-label">Início</span>
+  </button>
+  <button class="bn-item" id="bn-i" onclick="goTo('i',this)">
+    <svg viewBox="0 0 20 20" fill="none"><path d="M10 2v16M6 6h8M5 10h10M6 14h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/></svg>
+    <span class="bn-label">Injetores</span>
+  </button>
+  <button class="bn-item" id="bn-diag" onclick="goTo('diag',this)">
+    <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M6 10h3l1-3 2 6 1-3h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/></svg>
+    <span class="bn-label">IA</span>
+  </button>
+  <button class="bn-item" id="bn-obd" onclick="goTo('obd',this)">
+    <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="6" width="16" height="9" rx="1" stroke="currentColor" stroke-width="1.4"/><path d="M5 10h3M10 8v4M15 9v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/></svg>
+    <span class="bn-label">OBD</span>
+  </button>
+</nav>
+
+</div><!-- /app -->
+
+<!-- MODAL NOVO INJETOR -->
+<div class="ov" id="mnew"><div class="modal">
+  <div class="mhdr"><div class="mtitle">NOVO SERVIÇO</div><button class="mcl" onclick="cm('mnew')">✕</button></div>
+  <div class="mbody">
+    <div class="frow"><div class="field"><label>Cliente *</label><input type="text" id="fc" placeholder="Nome do cliente" autocomplete="name"></div><div class="field"><label>Veículo *</label><input type="text" id="fv" placeholder="Ex: Hilux 2021 2.8"></div></div>
+    <div class="frow"><div class="field"><label>Bico injetor *</label><input type="text" id="fb" placeholder="Ex: Bosch 0 445 110 376"></div><div class="field"><label>Data</label><input type="date" id="fd"></div></div>
+    <div class="frow full"><div class="field"><label>Observações</label><textarea id="fo" placeholder="Problema encontrado, serviço realizado..."></textarea></div></div>
+    <div class="usec">
+      <span class="ulsec">Fotos do serviço</span>
+      <div class="ultlbl">Como chegou (antes)</div>
+      <div class="dz" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dd(event,'b')"><input type="file" accept="image/*" multiple capture onchange="hf(event,'b')"><svg viewBox="0 0 32 32" fill="none"><rect x="2" y="6" width="28" height="20" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="14" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 22l8-6 6 5 5-4 9 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg><p>Toque para tirar foto ou <em>selecionar</em></p></div>
+      <div class="pgrid" id="pb"></div>
+      <div class="ultlbl" style="margin-top:12px">Como saiu (depois)</div>
+      <div class="dz" ondragover="dg(event,this)" ondragleave="dl(this)" ondrop="dd(event,'a')"><input type="file" accept="image/*" multiple capture onchange="hf(event,'a')"><svg viewBox="0 0 32 32" fill="none"><rect x="2" y="6" width="28" height="20" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="14" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 22l8-6 6 5 5-4 9 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg><p>Toque para tirar foto ou <em>selecionar</em></p></div>
+      <div class="pgrid" id="pa"></div>
+    </div>
+  </div>
+  <div class="mfoot"><button class="bcan" onclick="cm('mnew')">Cancelar</button><button class="bsav" onclick="saveI()">Salvar serviço</button></div>
+</div></div>
+
+<!-- MODAL DETALHE -->
+<div class="ov" id="mdet"><div class="modal detm">
+  <div class="mhdr"><div class="mtitle" id="dett">DETALHES</div><button class="mcl" onclick="cm('mdet')">✕</button></div>
+  <div class="mbody" id="detb"></div>
+</div></div>
+
+<!-- LB -->
+<div class="lb" id="lb" onclick="clb()"><button class="lbcl" onclick="clb()">✕</button><img id="lbi" src="" alt=""></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DB (localStorage) ──
+const DB={
+  get(k,d=null){try{const v=localStorage.getItem('snx_'+k);return v!==null?JSON.parse(v):d;}catch{return d;}},
+  set(k,v){try{localStorage.setItem('snx_'+k,JSON.stringify(v));}catch{toast('Armazenamento cheio — exclua fotos antigas');}},
+  del(k){localStorage.removeItem('snx_'+k);}
+};
+
+// ── AUTH ──
+const USERS=[{u:'admin',p:'snx2026',name:'Administrador',ini:'AD'},{u:'mecanico',p:'diesel123',name:'Mecânico',ini:'MC'},{u:'joao',p:'joao123',name:'João Carlos',ini:'JC'}];
+let CU=null;
+function doLogin(){
+  const u=document.getElementById('lu').value.trim(),p=document.getElementById('lp').value;
+  const f=USERS.find(x=>x.u===u&&x.p===p);
+  if(f){CU=f;DB.set('sess',f);document.getElementById('lerr').style.display='none';startApp();}
+  else document.getElementById('lerr').style.display='block';
+}
+function doLogout(){DB.del('sess');location.reload();}
+function startApp(){
+  document.getElementById('ls').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('sbnm').textContent=CU.name;
+  document.getElementById('sbav').textContent=CU.ini;
+  init();
+}
+const sess=DB.get('sess');if(sess){CU=sess;startApp();}
+
+// ── NAV ──
+let CV='d';
+const VIEWS={d:'Dashboard',i:'Injetores',diag:'Diagnóstico IA',obd:'Tradutor OBD'};
+const VIEW_IDS={d:'vd',i:'vi',diag:'vdiag',obd:'vobd'};
+function goTo(v,el){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(n=>n.classList.remove('active'));
+  if(el){el.classList.add('active');}
+  // sync both navs
+  const bnEl=document.getElementById('bn-'+v);if(bnEl)bnEl.classList.add('active');
+  const niEl=document.querySelector('.ni[onclick*="\''+v+'\'"]');if(niEl)niEl.classList.add('active');
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById(VIEW_IDS[v]).classList.add('active');
+  CV=v;
+  document.getElementById('bccur').textContent=VIEWS[v];
+  document.getElementById('tba').textContent=v==='i'||v==='d'?'+ Novo':'IA';
+  // close sidebar on mobile
+  document.getElementById('sidebar').classList.remove('mob-open');
+  if(v==='i')renderI();
+  if(v==='obd')renderOBD();
+  if(v==='diag'){checkKey();renderHist();}
+}
+function topAct(){if(CV==='i'||CV==='d')openNewI();else if(CV==='diag')document.getElementById('akin').focus();}
+
+// ── INIT ──
+function init(){
+  const now=new Date();
+  document.getElementById('ddate').textContent=now.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('ipd').textContent=now.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('fd').value=now.toISOString().split('T')[0];
+  updMets();renderDRec();renderDAct();renderOBD();
+}
+
+// ── METRICS ──
+function updMets(){
+  const svcs=DB.get('svcs',[]);
+  const tot=svcs.reduce((a,s)=>a+(s.b?.length||0)+(s.a?.length||0),0);
+  const dc=DB.get('dc',0);
+  document.getElementById('mv1').textContent=svcs.length;
+  document.getElementById('mv2').textContent=tot;
+  document.getElementById('mv4').textContent=dc;
+  document.getElementById('nbi').textContent=svcs.length;
+  document.getElementById('mb1').style.width=Math.min(svcs.length*10,100)+'%';
+  document.getElementById('mb4').style.width=Math.min(dc*5,100)+'%';
+  document.getElementById('mt1').textContent=svcs.length?svcs.length+' total':'0';
+  document.getElementById('aist').textContent=DB.get('ak','')?'ativa':'inativa';
+}
+
+// ── UTILS ──
+function fmtD(d){try{return new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;}}
+function cm(id){document.getElementById(id).classList.remove('open');}
+function olb(src){document.getElementById('lbi').src=src;document.getElementById('lb').classList.add('open');}
+function clb(){document.getElementById('lb').classList.remove('open');}
+document.getElementById('mnew').addEventListener('click',e=>{if(e.target===e.currentTarget)cm('mnew');});
+document.getElementById('mdet').addEventListener('click',e=>{if(e.target===e.currentTarget)cm('mdet');});
+function toast(msg,t='err'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast'+(t==='ok'?' ok':'');
+  el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+// ── DASHBOARD ──
+function renderDRec(){
+  const svcs=DB.get('svcs',[]).slice(0,4);
+  const el=document.getElementById('drec');
+  if(!svcs.length){el.innerHTML='<div style="font-family:var(--mn);font-size:11px;color:var(--mt2);padding:14px 0">Nenhum serviço cadastrado ainda.</div>';return;}
+  el.innerHTML=svcs.map(s=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--br);cursor:pointer" onclick="openDet(${s.id})">
+    <div style="width:42px;height:42px;background:var(--dk);border:1px solid var(--br);flex-shrink:0;overflow:hidden">${s.b?.[0]?`<img src="${s.b[0]}" style="width:100%;height:100%;object-fit:cover">`:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--mt2);font-size:16px">◆</div>'}</div>
+    <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.client}</div><div style="font-family:var(--mn);font-size:10px;color:var(--mt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.veh}</div></div>
+    <div style="text-align:right;flex-shrink:0"><div style="font-family:var(--mn);font-size:10px;color:var(--rd)">${fmtD(s.date)}</div></div>
+  </div>`).join('');
+}
+function renderDAct(){
+  const svcs=DB.get('svcs',[]).slice(0,5);
+  const el=document.getElementById('dact');
+  if(!svcs.length){el.innerHTML='<div style="font-family:var(--mn);font-size:11px;color:var(--mt2)">Nenhuma atividade.</div>';return;}
+  el.innerHTML=svcs.map(s=>`<div class="actitem"><div class="adot dr"></div><div><div class="atxt"><strong>${s.bico.substring(0,22)}</strong> · ${s.client}</div><div class="atm">${fmtD(s.date)}</div></div></div>`).join('');
+}
+
+// ── INJETORES ──
+let PB=[],PA=[];
+function renderI(){
+  const q=(document.getElementById('iq')?.value||'').toLowerCase();
+  const sort=document.getElementById('isort')?.value||'date-desc';
+  let svcs=DB.get('svcs',[]).filter(s=>s.client.toLowerCase().includes(q)||s.veh.toLowerCase().includes(q)||s.bico.toLowerCase().includes(q));
+  if(sort==='date-desc')svcs.sort((a,b)=>b.date.localeCompare(a.date));
+  else if(sort==='date-asc')svcs.sort((a,b)=>a.date.localeCompare(b.date));
+  else if(sort==='client')svcs.sort((a,b)=>a.client.localeCompare(b.client));
+  else svcs.sort((a,b)=>a.bico.localeCompare(b.bico));
+  const g=document.getElementById('igrid');
+  const ph=`<div class="tph"><svg viewBox="0 0 32 32" fill="none"><rect x="2" y="6" width="28" height="20" rx="2" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="14" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 22l8-6 6 5 5-4 9 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg><span>sem foto</span></div>`;
+  if(!svcs.length){
+    g.innerHTML=`<div class="empty"><svg viewBox="0 0 48 48" fill="none"><path d="M24 6v36M14 14h20M12 24h24M14 34h20" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/><rect x="6" y="6" width="36" height="36" stroke="currentColor" stroke-width="1.5"/></svg><p>${q?'Nenhum resultado encontrado.':'Nenhum serviço cadastrado ainda.'}</p><button onclick="openNewI()">+ Novo serviço</button></div>`;
+    return;
+  }
+  g.innerHTML=svcs.map(s=>`<div class="icard" onclick="openDet(${s.id})">
+    <div class="trow">
+      <div class="thumb">${s.b?.[0]?`<img src="${s.b[0]}" alt="">`:ph}<span class="tlbl">Antes</span></div>
+      <div class="thumb">${s.a?.[0]?`<img src="${s.a[0]}" alt="">`:ph}<span class="tlbl r">Depois</span></div>
+    </div>
+    <div class="ibody">
+      <div class="idate">${fmtD(s.date)}</div>
+      <div class="iclient">${s.client}</div>
+      <div class="iveh">${s.veh}</div>
+      <div class="ibico">${s.bico}</div>
+      <div class="icnts"><span class="icnt"><b>${s.b?.length||0}</b> antes</span><span class="icnt"><b>${s.a?.length||0}</b> depois</span></div>
+    </div>
+    <div class="ifoot" onclick="event.stopPropagation()">
+      <button class="iact" onclick="openDet(${s.id})">Ver galeria</button>
+      <button class="iact" onclick="delI(${s.id})">Excluir</button>
+    </div>
+  </div>`).join('');
+}
+function openNewI(){
+  PB=[];PA=[];
+  ['fc','fv','fb','fo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fd').value=new Date().toISOString().split('T')[0];
+  ['pb','pa'].forEach(id=>document.getElementById(id).innerHTML='');
+  document.getElementById('mnew').classList.add('open');
+  setTimeout(()=>document.getElementById('fc').focus(),300);
+}
+function saveI(){
+  const client=document.getElementById('fc').value.trim();
+  const veh=document.getElementById('fv').value.trim();
+  const bico=document.getElementById('fb').value.trim();
+  const date=document.getElementById('fd').value;
+  const obs=document.getElementById('fo').value.trim();
+  if(!client||!veh||!bico){toast('Preencha cliente, veículo e modelo do bico.');return;}
+  const svcs=DB.get('svcs',[]);
+  svcs.unshift({id:Date.now(),client,veh,bico,date:date||new Date().toISOString().split('T')[0],obs,b:[...PB],a:[...PA]});
+  DB.set('svcs',svcs);
+  cm('mnew');toast('Serviço salvo!','ok');
+  updMets();renderDRec();renderDAct();
+  if(CV==='i')renderI();
+}
+function delI(id){
+  if(!confirm('Excluir este serviço?'))return;
+  DB.set('svcs',DB.get('svcs',[]).filter(s=>s.id!==id));
+  toast('Excluído.','ok');updMets();renderI();renderDRec();
+}
+function openDet(id){
+  const s=DB.get('svcs',[]).find(x=>x.id===id);if(!s)return;
+  document.getElementById('dett').textContent=s.client.toUpperCase();
+  const noF='<div style="font-family:var(--mn);font-size:11px;color:var(--mt2);padding:14px">Nenhuma foto.</div>';
+  document.getElementById('detb').innerHTML=`
+    <div class="detgal">
+      <div class="galcol"><div class="galct"><span class="gdot"></span>COMO CHEGOU · ${s.b?.length||0} foto(s)</div><div class="galimgs">${s.b?.length?s.b.map(src=>`<div class="galimg" onclick="olb('${src}')"><img src="${src}" alt=""></div>`).join(''):noF}</div></div>
+      <div class="galcol" style="border-left:1px solid var(--br)"><div class="galct"><span class="gdot r"></span>COMO SAIU · ${s.a?.length||0} foto(s)</div><div class="galimgs">${s.a?.length?s.a.map(src=>`<div class="galimg" onclick="olb('${src}')"><img src="${src}" alt=""></div>`).join(''):noF}</div></div>
+    </div>
+    <div class="detinfo">
+      <div class="di"><div class="dil">Cliente</div><div class="div2">${s.client}</div></div>
+      <div class="di"><div class="dil">Veículo</div><div class="div2">${s.veh}</div></div>
+      <div class="di"><div class="dil">Data</div><div class="div2">${fmtD(s.date)}</div></div>
+      <div class="di" style="grid-column:1/-1"><div class="dil">Bico injetor</div><div class="div2">${s.bico}</div></div>
+      ${s.obs?`<div class="di" style="grid-column:1/-1"><div class="dil">Observações</div><div class="div2" style="font-weight:400;color:var(--mt);line-height:1.6">${s.obs}</div></div>`:''}
+    </div>`;
+  document.getElementById('mdet').classList.add('open');
+}
+
+// ── FILE UPLOAD ──
+function hf(e,t){Array.from(e.target.files).forEach(f=>rf(f,t));e.target.value='';}
+function dg(e,z){e.preventDefault();z.classList.add('drag');}
+function dl(z){z.classList.remove('drag');}
+function dd(e,t){e.preventDefault();e.currentTarget.classList.remove('drag');Array.from(e.dataTransfer.files).forEach(f=>{if(f.type.startsWith('image/'))rf(f,t);});}
+function rf(file,t){
+  // Resize on mobile to avoid localStorage overflow
+  const img=new Image();const url=URL.createObjectURL(file);
+  img.onload=()=>{
+    const MAX=900;let w=img.width,h=img.height;
+    if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+    if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    c.getContext('2d').drawImage(img,0,0,w,h);
+    const src=c.toDataURL('image/jpeg',0.82);
+    URL.revokeObjectURL(url);
+    if(t==='b')PB.push(src);else PA.push(src);
+    const g=document.getElementById('p'+t);
+    const d=document.createElement('div');d.className='pi';
+    d.innerHTML=`<img src="${src}" alt=""><button class="prm" onclick="rp(this,'${t}')">✕</button>`;
+    g.appendChild(d);
+  };
+  img.src=url;
+}
+function rp(btn,t){
+  const src=btn.previousElementSibling.src;btn.parentElement.remove();
+  if(t==='b')PB=PB.filter(x=>x!==src);else PA=PA.filter(x=>x!==src);
+}
+
+// ── OBD DATABASE ──
+const OBDDB=[
+  {c:'P0087',n:'Pressão do Rail Abaixo do Limite',cat:'Combustível',sev:'a',d:'Pressão no rail abaixo do mínimo. Causa perda de potência e fumaça preta.',cs:['Bomba CP4 com desgaste','Filtro entupido','Regulador com defeito','Retorno excessivo nos injetores'],sol:'1. Medir pressão com manômetro.\n2. Substituir filtro.\n3. Testar bomba na bancada.\n4. Medir retorno dos injetores.',vs:['Hilux 2.8','Ranger 3.2','S10 2.8','Amarok']},
+  {c:'P0088',n:'Pressão do Rail Acima do Limite',cat:'Combustível',sev:'a',d:'Pressão excessiva. Risco de dano a injetores e juntas.',cs:['Regulador travado fechado','Válvula de alívio com defeito','Sensor com leitura errada'],sol:'Verificar sensor e regulador. Testar válvula de alívio.',vs:['Hilux 2.8','Ranger 3.2','Amarok V6']},
+  {c:'P0089',n:'Regulador de Pressão — Desempenho Fora do Padrão',cat:'Combustível',sev:'m',d:'Regulador não mantendo pressão estável.',cs:['Regulador desgastado','Sujeira no solenóide','Alimentação elétrica instável'],sol:'Testar solenóide com multímetro. Limpar ou substituir regulador.',vs:['Hilux 2.8','S10 2.8','Frontier 2.3']},
+  {c:'P0191',n:'Sensor de Pressão do Rail — Fora da Faixa',cat:'Sensores',sev:'m',d:'Sensor enviando sinal fora do range 0.5V–4.5V.',cs:['Conector oxidado','Sensor deficiente','Alimentação de 5V instável'],sol:'Limpar conector. Medir tensão. Substituir sensor se necessário.',vs:['Hilux','Ranger','Amarok','L200']},
+  {c:'P0200',n:'Circuito do Injetor — Falha Geral',cat:'Injetores',sev:'a',d:'Problema elétrico geral nos injetores. Motor pode não partir.',cs:['Fusível queimado','Relé com defeito','Curto no chicote'],sol:'Verificar fusíveis e relés. Medir resistência dos solenóides.',vs:['Todos os modelos diesel']},
+  {c:'P0201',n:'Injetor Cilindro 1 — Falha',cat:'Injetores',sev:'a',d:'Falha no injetor do cilindro 1. Marcha falhando.',cs:['Solenóide fora do padrão','Chicote rompido','Conector oxidado'],sol:'Medir resistência do injetor (0.5–2Ω). Inspecionar chicote.',vs:['Diesel 4 cilindros']},
+  {c:'P0202',n:'Injetor Cilindro 2 — Falha',cat:'Injetores',sev:'a',d:'Falha no injetor do cilindro 2.',cs:['Solenóide deficiente','Conector danificado'],sol:'Mesma rotina do P0201 no cilindro 2.',vs:['Diesel 4 cilindros']},
+  {c:'P0203',n:'Injetor Cilindro 3 — Falha',cat:'Injetores',sev:'a',d:'Falha no injetor do cilindro 3.',cs:['Solenóide deficiente','Chicote partido'],sol:'Mesma rotina do P0201 no cilindro 3.',vs:['Diesel 4 cilindros']},
+  {c:'P0204',n:'Injetor Cilindro 4 — Falha',cat:'Injetores',sev:'a',d:'Falha no injetor do cilindro 4.',cs:['Solenóide deficiente'],sol:'Mesma rotina do P0201 no cilindro 4.',vs:['Diesel 4 cilindros']},
+  {c:'P0300',n:'Falha de Injeção — Múltiplos Cilindros',cat:'Injetores',sev:'a',d:'Motor falhando em múltiplos cilindros. Vibração intensa.',cs:['Múltiplos injetores com defeito','Baixa pressão no rail','Velas de incandescência ruins'],sol:'Fazer compressão nos 4 cilindros. Testar pressão do rail. Retorno dos injetores.',vs:['Todos diesel']},
+  {c:'P0380',n:'Velas de Incandescência — Falha',cat:'Partida a frio',sev:'m',d:'Problema nas velas. Dificuldade de partir no frio.',cs:['Velas queimadas','Relé com defeito','Módulo de controle com falha'],sol:'Medir resistência de cada vela (< 1Ω). Substituir as queimadas.',vs:['Hilux 2.8','S10 2.8','L200 2.5','Ranger 3.2']},
+  {c:'P0400',n:'Sistema EGR — Fluxo Fora do Padrão',cat:'Emissões',sev:'m',d:'EGR não funcionando nos parâmetros. Aumento de emissões.',cs:['Válvula EGR entupida','Falha elétrica','Duto entupido'],sol:'Limpar válvula EGR com descarbonizador. Testar elétrico.',vs:['Modelos Euro 5/6']},
+  {c:'P0470',n:'Sensor de Pressão do Escapamento',cat:'Turbo/DPF',sev:'m',d:'Sensor de contrapressão fora do padrão. DPF afetado.',cs:['DPF entupido','Sensor diferencial com defeito','Mangueira perfurada'],sol:'Verificar pressão diferencial DPF. Regenerar ou limpar.',vs:['Hilux 2019+','Ranger 2020+']},
+  {c:'P0601',n:'ECU — Erro Interno de Memória',cat:'ECU',sev:'a',d:'Erro de checksum na ECU. Comportamento imprevisível.',cs:['Falha de tensão','ECU com defeito de hardware'],sol:'Resetar ECU. Se persistir, reprogramar.',vs:['Todos os veículos']},
+  {c:'P1093',n:'Bomba CP4 — Pressão Insuficiente',cat:'Combustível',sev:'a',d:'Código Bosch para pressão insuficiente da bomba CP4. Comum em Hilux 2016+.',cs:['CP4 com cavitação','Combustível de má qualidade','Contaminação por água','Filtro entupido'],sol:'Verificar qualidade do combustível. Substituir filtro. Testar CP4 na bancada.',vs:['Hilux 2016+','Ranger 2019+']},
+  {c:'P1148',n:'Injetor Piezoelétrico — Desvio de Carga',cat:'Injetores',sev:'a',d:'Injetor piezoelétrico descalibrado.',cs:['Injetor descalibrado','Depósito no bico','Atuador piezo fora do padrão'],sol:'Calibrar na bancada. Se fora do limite, substituir.',vs:['Amarok V6 TDI','Toro 2.0 Multijet']},
+  {c:'P0192',n:'Sensor de Pressão do Rail — Sinal Baixo',cat:'Sensores',sev:'m',d:'Tensão do sensor abaixo de 0.5V. Curto para massa.',cs:['Fio em curto para massa','Sensor deficiente'],sol:'Verificar cabeamento. Substituir sensor.',vs:['Todos common rail']},
+  {c:'P0193',n:'Sensor de Pressão do Rail — Sinal Alto',cat:'Sensores',sev:'m',d:'Tensão acima de 4.5V. Circuito aberto.',cs:['Fio em curto para alimentação','Circuito aberto'],sol:'Verificar cabeamento. Medir tensão do sinal.',vs:['Todos common rail']},
+  {c:'P0401',n:'EGR — Fluxo Insuficiente',cat:'Emissões',sev:'m',d:'Gases recirculados abaixo do esperado.',cs:['Válvula EGR travada fechada','Duto entupido'],sol:'Remover e limpar válvula EGR.',vs:['Hilux 2019+','Ranger 2019+']},
+  {c:'P0545',n:'Sensor Temp. Escapamento — Sinal Baixo',cat:'Turbo/DPF',sev:'b',d:'Sinal do sensor abaixo do esperado. Regeneração DPF afetada.',cs:['Sensor deficiente','Conector oxidado'],sol:'Verificar conector. Medir resistência.',vs:['Todos diesel com DPF']},
+];
+let selOBD=null;
+function renderOBD(q=''){
+  const filt=OBDDB.filter(o=>o.c.toLowerCase().includes(q.toLowerCase())||o.n.toLowerCase().includes(q.toLowerCase())||o.cat.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('obdlist').innerHTML=filt.map(o=>`<div class="obdli ${selOBD?.c===o.c?'active':''}" onclick="selO('${o.c}',this)"><div class="obdlcode">${o.c}</div><div class="obdlname">${o.n}</div></div>`).join('');
+  if(!selOBD&&filt.length)selO(filt[0].c,document.querySelector('.obdli'));
+}
+function filterOBD(v){renderOBD(v);}
+function selO(code,el){
+  selOBD=OBDDB.find(o=>o.c===code);
+  document.querySelectorAll('.obdli').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
+  if(!selOBD)return;
+  const s=selOBD;
+  const sevcls={'a':'sa','m':'sm','b':'sb2'}[s.sev]||'sm';
+  const sevlbl={'a':'Alta','m':'Média','b':'Baixa'}[s.sev];
+  document.getElementById('obddet').innerHTML=`
+    <div class="obdcode">${s.c}</div><div class="obdname">${s.n}</div>
+    <span class="sevalt ${sevcls}">◆ Severidade: ${sevlbl}</span>
+    <div class="obdsec"><h4>Descrição</h4><p>${s.d}</p></div>
+    <div class="obdsec"><h4>Causas prováveis</h4><ul>${s.cs.map(c=>`<li><strong>${c}</strong></li>`).join('')}</ul></div>
+    <div class="obdsec"><h4>Procedimento</h4><p style="white-space:pre-line">${s.sol}</p></div>
+    <div class="obdsec"><h4>Veículos</h4><div class="obdvehs">${s.vs.map(v=>`<span class="obdveh">${v}</span>`).join('')}</div></div>`;
+  // on mobile, scroll to detail
+  if(window.innerWidth<=768)document.getElementById('obddet').scrollIntoView({behavior:'smooth'});
+}
+function dOBD(){
+  const code=document.getElementById('dobin').value.toUpperCase().trim();
+  const d=OBDDB.find(o=>o.c===code);const el=document.getElementById('dobr');
+  if(d)el.innerHTML=`<div class="obdc">${d.c}</div><div class="obdn">${d.n}</div><div class="obdd">${d.d.substring(0,100)}...</div><div class="obdtags">${d.vs.slice(0,3).map(v=>`<span class="obdtag">${v}</span>`).join('')}</div>`;
+  else el.innerHTML=`<div class="obdc">${code||'—'}</div><div class="obdn" style="color:var(--mt)">Não encontrado</div><div class="obdd">Confira a base completa no menu Tradutor OBD.</div>`;
+}
+document.getElementById('dobin').addEventListener('keydown',e=>{if(e.key==='Enter')dOBD();});
+
+// ── IA DIAGNÓSTICO ──
+function checkKey(){
+  const k=DB.get('ak','');
+  document.getElementById('aknote').style.display=k?'none':'block';
+  document.getElementById('akin').value=k?'sk-ant-****...'+k.slice(-4):'';
+}
+function saveKey(){
+  const v=document.getElementById('akin').value.trim();
+  if(!v.startsWith('sk-ant-')){toast('Chave inválida. Deve começar com sk-ant-');return;}
+  DB.set('ak',v);checkKey();toast('Chave salva!','ok');updMets();
+}
+async function runDiag(){
+  const k=DB.get('ak','');
+  if(!k){toast('Configure a chave da API primeiro.');return;}
+  const sin=document.getElementById('dsin').value.trim();
+  const mod=document.getElementById('dmod').value;
+  const km=document.getElementById('dkm').value;
+  if(!sin){toast('Descreva os sintomas antes de analisar.');return;}
+  const btn=document.getElementById('drbtn');
+  btn.disabled=true;btn.textContent='Analisando...';
+  document.getElementById('dres').innerHTML='<div class="dloading">⬤ IA analisando os sintomas...</div>';
+  const prompt=`Você é especialista em motores diesel Common Rail e injeção eletrônica, com foco em veículos brasileiros. Analise o caso e dê diagnóstico técnico em português brasileiro.
+
+VEÍCULO: ${mod||'Não informado'}
+KM: ${km||'Não informado'}
+SINTOMAS: ${sin}
+
+Responda com esta estrutura:
+
+DIAGNÓSTICO MAIS PROVÁVEL
+[problema + % probabilidade]
+
+DIAGNÓSTICO ALTERNATIVO 1
+[problema + % probabilidade]
+
+DIAGNÓSTICO ALTERNATIVO 2
+[problema + % probabilidade]
+
+PROCEDIMENTO DE VERIFICAÇÃO
+[passos numerados e práticos]
+
+ESTIMATIVA DE CUSTO
+[em R$ para o Brasil — peças + mão de obra]
+
+URGÊNCIA
+[crítico / moderado / baixo — e motivo]
+
+Seja técnico e direto. Linguagem de mecânico diesel experiente.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    if(!res.ok){const err=await res.json();throw new Error(err.error?.message||'Erro '+res.status);}
+    const data=await res.json();
+    const txt=data.content[0]?.text||'Sem resposta.';
+    const fmt=txt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/^([A-ZÁÉÍÓÚ][A-ZÁÉÍÓÚ\s]{4,})$/gm,'<h4>$1</h4>').replace(/^(\d+\..+)$/gm,'<li>$1</li>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+    document.getElementById('dres').innerHTML=`<div class="dia-res">${fmt}</div>`;
+    const hist=DB.get('dh',[]);
+    hist.unshift({dt:new Date().toISOString(),mod:mod||'N/I',sin:sin.substring(0,80)});
+    DB.set('dh',hist.slice(0,15));
+    DB.set('dc',(DB.get('dc',0)+1));
+    renderHist();updMets();toast('Diagnóstico concluído!','ok');
+    // scroll result into view on mobile
+    if(window.innerWidth<=768)document.getElementById('dres').scrollIntoView({behavior:'smooth'});
+  }catch(e){
+    document.getElementById('dres').innerHTML=`<div style="background:var(--rdd);border:1px solid var(--rd);padding:14px;font-family:var(--mn);font-size:11px;color:var(--rd);line-height:1.6"><strong>Erro:</strong> ${e.message}<br><br>Verifique a chave e os créditos em console.anthropic.com</div>`;
+    toast('Erro: '+e.message);
+  }
+  btn.disabled=false;btn.textContent='Analisar com IA →';
+}
+function renderHist(){
+  const hist=DB.get('dh',[]);const el=document.getElementById('dhist');if(!el)return;
+  if(!hist.length){el.innerHTML='<div style="font-family:var(--mn);font-size:11px;color:var(--mt2)">Nenhum diagnóstico ainda.</div>';return;}
+  el.innerHTML=hist.slice(0,6).map(h=>`<div class="dhi" onclick="document.getElementById('dsin').value=this.dataset.s" data-s="${h.sin.replace(/"/g,'&quot;')}">
+    <div class="dhi-date">${new Date(h.dt).toLocaleDateString('pt-BR')} · ${h.mod}</div>
+    <div class="dhi-txt">${h.sin}${h.sin.length>=80?'...':''}</div>
+  </div>`).join('');
+}
+async function qDiag(){
+  const k=DB.get('ak','');const sin=document.getElementById('ddin').value.trim();const mod=document.getElementById('ddmod').value;
+  if(!k){goTo('diag',document.querySelectorAll('.ni')[2]);toast('Configure a chave da API.');return;}
+  if(!sin){toast('Descreva o sintoma.');return;}
+  const btn=document.getElementById('ddbtn');btn.disabled=true;btn.textContent='Analisando...';
+  const res=document.getElementById('ddres');res.innerHTML='<div class="dloading">Analisando...</div>';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:`Mecânico diesel expert. Max 3 linhas. Veículo: ${mod||'diesel'}. Sintoma: ${sin}. 2 causas mais prováveis e próximo passo imediato.`}]})});
+    const data=await resp.json();
+    res.innerHTML=`<div style="font-size:12px;color:var(--tx);line-height:1.6;border:1px solid var(--br);padding:10px;background:var(--dk)">${(data.content[0]?.text||'').replace(/\n/g,'<br>')}</div>`;
+  }catch(e){res.innerHTML=`<div style="font-family:var(--mn);font-size:11px;color:var(--rd)">Erro: ${e.message}</div>`;}
+  btn.disabled=false;btn.textContent='Analisar';
+}
+</script>
+</body>
+</html>
